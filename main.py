@@ -1,13 +1,17 @@
-# This is a sample Python script.
+from BotConfig import *
+from DiscordClient import *
+import faulthandler
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+faulthandler.enable()
 
 
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print("kundy")
+    config = BotConfig.load()
+
+    discord = DiscordClient(config=config)
+    discord.run(config.key)
+
+
+    pass
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
