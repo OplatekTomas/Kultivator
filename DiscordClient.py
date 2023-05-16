@@ -12,11 +12,6 @@ class DiscordClient(discord.Bot):
 
     module_loader: ModuleLoader
 
-    @staticmethod
-    async def create(intents: Intents, config: BotConfig, **options: Any):
-        client = DiscordClient(intents=intents, config=config, options=options)
-        return client
-
     def __init__(self, config: BotConfig, **options: Any):
         super().__init__(intents=discord.Intents.all())
         self.module_loader = ModuleLoader(client=self, config=config)

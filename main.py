@@ -4,14 +4,8 @@ import faulthandler
 
 faulthandler.enable()
 
-
-if __name__ == '__main__':
-    config = BotConfig.load()
-
-    discord = DiscordClient(config=config)
-    discord.run(config.key)
+config = BotConfig.load()
 
 
-    pass
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+bot = DiscordClient(config=config)
+bot.run(config.key)

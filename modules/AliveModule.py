@@ -1,13 +1,15 @@
-from typing import overload
+import platform
 
 import platform
 
-import discord
-from discord import commands, guild_only
 
-import Container
+import discord
+from discord.commands import slash_command
+from discord.ext import commands
+
+
 from BaseModule import BaseModule
-from Container import DependencyContainer, Injectable
+from Container import Injectable
 from DiscordClient import DiscordClient
 from dependencies.ModuleConfig import ModuleConfig
 
@@ -18,27 +20,22 @@ class AliveModule(BaseModule):
     config: ModuleConfig = Injectable[ModuleConfig]()
 
     async def on_load(self):
-
         channel = self.discord_client.get_channel(self.config["bot_channel_id"])
         msg = "> Logged in from " + platform.node() + " on " + platform.release()
         await channel.send(content=msg)
         pass
 
     async def on_message(self, message: discord.Message):
-        comms = self.get_commands()
         if message.channel.id != self.config["bot_channel_id"]:
-            pass
+            return
         if any([mention.id == self.discord_client.user.id for mention in message.mentions]):
             await message.reply("Yes I'm alive!")
 
-    @commands.slash_command()
-    async def hello(self, ctx: discord.ApplicationContext):
-        """Says hello"""
-        channel = self.discord_client.get_channel(self.config["bot_channel_id"])
-        await channel.send(content="test command")
+    @slash_command(guild_ids=[630432344498503718], description="Status of the bot..")
+    @commands.guild_only()
+    async def status(self, ctx: discord.ApplicationContext, cmd: discord.Option(str, choices=['', 'stats'])):
+        await ctx.respond("The bot is up and running. Current commands waiting to be loaded:" + ", ".join([x.name for x in self.bot.pending_application_commands]))
         pass
-
-
 
 def setup(bot):
     bot.add_cog(AliveModule(bot))

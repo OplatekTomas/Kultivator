@@ -15,3 +15,8 @@ class ModuleConfig(TransientDependency):
         self.__base_config__.module_configs[self.target_name][key] = value
         self.__base_config__.save()
 
+    def __contains__(self, item):
+        return item in self.__base_config__.module_configs[self.target_name]
+
+    def save(self):
+        self.__base_config__.save()
