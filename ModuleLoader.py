@@ -50,30 +50,18 @@ class ModuleLoader:
             self.container.inject_into(instance)
         pass
 
-    async def import_modules(self):
-        modules = glob.glob('./modules/*Module.py')
-        module_list = []
-        module_names = []
-        for module in modules:
-            module_name = os.path.basename(module).split('.')[0]
-            spec = importlib.util.spec_from_file_location(module_name, module)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            if not dir(module).__contains__(module_name):
-                pass
-            for name, t in inspect.getmembers(module):
-                if inspect.isclass(t) and issubclass(t, BaseModule) and t != BaseModule:
-                    module_names.append(name)
-                    module_list.append(t)
+    def import_modules(self):
+        module_list = [y.replace(".py", "") for y in (filter(lambda x: (x.endswith(".py")),os.listdir("modules")))]
+
         for module in module_list:
-            self.client.load_extension("modules." + module.__name__)
+            self.client.load_extension("modules." + module)
             pass
         for name in self.client._CogMixin__cogs:
             instance = self.client.get_cog(name)
             self.container.inject_into(instance)
             self.modules.append(instance)
 
-        for name in module_names:
+        for name in module_list:
             self.config.handle_config_creation(name)
         self.config.save()
 

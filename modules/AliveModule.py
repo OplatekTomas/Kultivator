@@ -31,11 +31,6 @@ class AliveModule(BaseModule):
         if any([mention.id == self.discord_client.user.id for mention in message.mentions]):
             await message.reply("Yes I'm alive!")
 
-    @slash_command(guild_ids=[630432344498503718], description="Status of the bot..")
-    @commands.guild_only()
-    async def status(self, ctx: discord.ApplicationContext, cmd: discord.Option(str, choices=['', 'stats'])):
-        await ctx.respond("The bot is up and running. Current commands waiting to be loaded:" + ", ".join([x.name for x in self.bot.pending_application_commands]))
-        pass
 
 def setup(bot):
     bot.add_cog(AliveModule(bot))
