@@ -47,6 +47,7 @@ class ModuleLoader:
                 elif inspect.isclass(t) and issubclass(t, TransientDependency):
                     self.container.add_transient(t)
         for t, instance in self.container.singletons.items():
+            self.config.handle_config_creation(t.__name__)
             self.container.inject_into(instance)
         pass
 

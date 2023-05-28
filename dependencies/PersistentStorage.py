@@ -7,7 +7,7 @@ class PersistentStorage(TransientDependency):
 
     base_dir = "./storage"
 
-    def load_file(self, path: str, mode: str) -> IO:
+    def load_file(self, path: str, mode: str = "r") -> IO:
         module_dir = f"{self.base_dir}/{self.target_name}/"
         if not os.path.exists(module_dir):
             os.makedirs(module_dir)
@@ -23,4 +23,5 @@ class PersistentStorage(TransientDependency):
         dir = f"{self.base_dir}/{self.target_name}/{name}"
         if not os.path.exists(dir):
             os.makedirs(dir)
+        return dir
 

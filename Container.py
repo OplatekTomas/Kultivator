@@ -42,7 +42,7 @@ class DependencyContainer:
         for name in props:
             prop = props[name]
             generic_type = get_args(get_generic_type(prop))
-            if generic_type[0] in self.singletons:
+            if generic_type[0].__name__ in [x.__name__ for x in self.singletons]:
                 setattr(obj, name, self.singletons[generic_type[0]])
             elif generic_type[0].__name__ in [x.__name__ for x in self.transients]:
                 instance = generic_type[0](type(obj).__name__)
@@ -50,6 +50,8 @@ class DependencyContainer:
                 setattr(obj, name, instance)
             else:
                 setattr(obj, name, None)
+        if hasattr(obj, 'after_inject') and callable(obj.after_inject):
+            obj.after_inject()
     pass
 
     def get_injectable_props(self, o: object):

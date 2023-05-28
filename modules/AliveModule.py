@@ -24,7 +24,6 @@ class AliveModule(BaseModule):
         msg = "> Logged in from " + platform.node() + " on " + platform.release()
         await channel.send(content=msg)
         pass
-
     async def on_message(self, message: discord.Message):
         if message.channel.id != self.config["bot_channel_id"]:
             return
