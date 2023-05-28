@@ -16,7 +16,7 @@ class Injectable(Generic[T]):
 
 
 class DependencyContainer:
-    singletons: Dict[Type, object] = dict()
+    singletons: Dict[str, object] = dict()
     transients: List[Type] = list()
     unloaded_dependencies: List[Type]
 
@@ -24,14 +24,14 @@ class DependencyContainer:
         if t in self.singletons:
             return
         instance = t()
-        self.singletons[t] = instance
+        self.singletons[t.__name__] = instance
         if immediate_inject:
             self.inject_into(instance)
 
     def add_constant(self, obj: object):
         if obj.__class__ in self.singletons:
             return
-        self.singletons[obj.__class__] = obj
+        self.singletons[obj.__class__.__name__] = obj
 
     def add_transient(self, t: Type):
         if t not in self.transients:
@@ -42,8 +42,8 @@ class DependencyContainer:
         for name in props:
             prop = props[name]
             generic_type = get_args(get_generic_type(prop))
-            if generic_type[0].__name__ in [x.__name__ for x in self.singletons]:
-                setattr(obj, name, self.singletons[generic_type[0]])
+            if generic_type[0].__name__ in [x for x in self.singletons]:
+                setattr(obj, name, self.singletons[generic_type[0].__name__])
             elif generic_type[0].__name__ in [x.__name__ for x in self.transients]:
                 instance = generic_type[0](type(obj).__name__)
                 self.inject_into(instance)

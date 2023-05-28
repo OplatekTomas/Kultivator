@@ -16,7 +16,6 @@ class PersistentStorage(TransientDependency):
         if not os.path.exists(file_path):
             with open(file_path, 'w') as fp:
                 pass
-
         return open(file_path, mode)
 
     def create_dir(self, name: str):

@@ -22,28 +22,27 @@ from dependencies.ModuleConfig import ModuleConfig
 class KafoView(discord.ui.View):
 
     log: CoffeeLog
+    config: ModuleConfig
 
-    async def handle_kafo(self, user_id: int, count: int, interaction: discord.interactions.Interaction):
+    def save_kafo(self, user_id: int, t: CoffeeType) -> int:
+        self.log.add_coffee(user_id, t)
+        return sum([x.kind.value for x in self.log.data[user_id]])
+
+    async def handle_kafo(self, user_id: int, count: CoffeeType, interaction: discord.interactions.Interaction):
         count = self.save_kafo(user_id, count)
         await interaction.message.edit(content=f"Kafe číslo: {count}\nNa zdraví <:kafo:780424664152408074>", view=None)
 
-
-    def save_kafo(self, user_id: int, count: int) -> int:
-        self.log.add_coffee(user_id, CoffeeType.NORMAL)
-        return 1
-
-
     @discord.ui.button(label="Kávička", style=discord.ButtonStyle.secondary, emoji="<:kafo:780424664152408074>")
     async def depresso_callback(self, button, interaction: discord.interactions.Interaction):
-        await self.handle_kafo(interaction.user.id, 1, interaction)
+        await self.handle_kafo(interaction.user.id, CoffeeType.NORMAL, interaction)
 
     @discord.ui.button(label="Double depresso", style=discord.ButtonStyle.secondary, emoji="<:void:1030795344113565697>")
     async def double_depresso(self, button, interaction: discord.interactions.Interaction):
-        await self.handle_kafo(interaction.user.id, 2, interaction)
+        await self.handle_kafo(interaction.user.id, CoffeeType.DOUBLE, interaction)
 
     @discord.ui.button(label="Hahad", style=discord.ButtonStyle.secondary, emoji="<:hahad:908660929472905226>")
     async def hahad(self, button, interaction: discord.interactions.Interaction):
-        await self.handle_kafo(interaction.user.id, 1, interaction)
+        await self.handle_kafo(interaction.user.id, CoffeeType.INSTINCT, interaction)
 
     @discord.ui.button(label="Stats", style=discord.ButtonStyle.secondary, emoji="📈")
     async def stats(self, button, interaction: discord.interactions.Interaction):
@@ -54,6 +53,7 @@ class KafoModule(BaseModule):
 
     discord_client: DiscordClient = Injectable[DiscordClient]()
     log: CoffeeLog = Injectable[CoffeeLog]()
+    config: ModuleConfig = Injectable[ModuleConfig]()
 
     async def on_load(self):
         pass
@@ -79,6 +79,7 @@ class KafoModule(BaseModule):
     async def kafo(self, ctx: discord.ApplicationContext):
         view = KafoView()
         view.log = self.log
+        view.config = self.config
         await ctx.response.send_message(view=view)
         pass
 
