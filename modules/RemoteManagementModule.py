@@ -22,14 +22,14 @@ class RemoteManagementModule(BaseModule):
         pass
 
     @commands.guild_only()
-    @commands.slash_command(guild_ids=[630432344498503718], description="Shuts down the bot", name="shutdown")
+    @commands.slash_command(description="Shuts down the bot", name="shutdown")
     async def shutdown(self, ctx: discord.ApplicationContext):
         await ctx.response.send_message(content="Shutting down now")
         quit()
         pass
 
     @commands.guild_only()
-    @commands.slash_command(guild_ids=[630432344498503718], description="Restarts the bot while pulling the newest version from git", name="restart")
+    @commands.slash_command(description="Restarts the bot while pulling the newest version from git", name="restart")
     async def restart(self, ctx: discord.ApplicationContext):
         await ctx.response.send_message(content="Restarting now...")
         time.sleep(1)

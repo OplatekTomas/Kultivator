@@ -1,32 +1,74 @@
-import datetime
 import glob
-import platform
-
-import platform
-from enum import Enum
-from os import walk
-from typing import Dict, List
+import io
 
 import discord
-from discord.commands import slash_command
+import matplotlib.pyplot as plt
+from PIL import Image
 from discord.ext import commands
+from matplotlib.dates import date2num, DateFormatter
 
+import matplotlib.pyplot as plt
+from matplotlib.dates import date2num, DateFormatter, ConciseDateFormatter, AutoDateLocator
+from datetime import datetime
+from discord.utils import get
+
+from enum import Enum
+import numpy as np
+from scipy.interpolate import CubicSpline
+from statsmodels.nonparametric.smoothers_lowess import lowess
 
 from BaseModule import BaseModule
 from Container import Injectable
 from DiscordClient import DiscordClient
 from dependencies.CoffeeLog import CoffeeLog, CoffeeType
-from dependencies.PersistentStorage import PersistentStorage
 from dependencies.ModuleConfig import ModuleConfig
 
 class KafoView(discord.ui.View):
 
     log: CoffeeLog
     config: ModuleConfig
+    bot: DiscordClient
 
     def save_kafo(self, user_id: int, t: CoffeeType) -> int:
         self.log.add_coffee(user_id, t)
         return sum([x.kind.value for x in self.log.data[user_id]])
+
+    def create_stats(self) -> io.BufferedIOBase:
+        # Separate x (datetime) and y (enum values) data
+
+        # Extract timestamps and enum values for each data set
+        timestamps_sets = [[date2num(item.timestamp) for item in self.log.data[id]] for id in self.log.data]
+        enum_values_sets = [[item.kind.value for item in self.log.data[id]] for id in self.log.data]
+        label_sets = [id for id in self.log.data]
+
+        cumulative_sum_sets = [np.cumsum(enum_values) for enum_values in enum_values_sets]
+
+        smoothed_sets = [lowess(cumulative_sum, timestamps, frac=0.3) for cumulative_sum, timestamps in
+                         zip(cumulative_sum_sets, timestamps_sets)]
+
+        fig, ax = plt.subplots()
+
+        for i, smoothed in enumerate(smoothed_sets):
+            smoothed_timestamps, smoothed_cumulative_sum = smoothed.T
+            user = get(self.bot.get_all_members(), id=label_sets[i])
+            if user:
+                plt.plot(smoothed_timestamps, smoothed_cumulative_sum, label=user.name)
+
+        # Set labels and title
+        ax.set_xlabel('Datum')
+        ax.set_ylabel('Počet káviček')
+        ax.set_title('Kafo staty by Kultivátor®')
+
+        ax.xaxis.set_major_formatter(DateFormatter('%d. %b'))
+
+        plt.xticks(rotation=45)
+
+        plt.legend()
+        plt.tight_layout()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        return buf
 
     async def handle_kafo(self, user_id: int, count: CoffeeType, interaction: discord.interactions.Interaction):
         count = self.save_kafo(user_id, count)
@@ -46,7 +88,8 @@ class KafoView(discord.ui.View):
 
     @discord.ui.button(label="Stats", style=discord.ButtonStyle.secondary, emoji="📈")
     async def stats(self, button, interaction: discord.interactions.Interaction):
-        await interaction.message.edit(content="Pomalu snejksi, staty jsem ještě neimplmenetoval <:harold:762400725123989525>", view=None)
+        image = self.create_stats()
+        await interaction.message.edit(content="",file=discord.File(image, "kafo.png"), view=None)
 
 
 class KafoModule(BaseModule):
@@ -75,10 +118,11 @@ class KafoModule(BaseModule):
         pass
 
     @commands.guild_only()
-    @commands.slash_command(guild_ids=[630432344498503718], description="Čas na kávičku ☕", name="kafo")
+    @commands.slash_command(description="Čas na kávičku ☕", name="kafo")
     async def kafo(self, ctx: discord.ApplicationContext):
         view = KafoView()
         view.log = self.log
+        view.bot = self.bot
         view.config = self.config
         await ctx.response.send_message(view=view)
         pass

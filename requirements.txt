@@ -1,3 +1,7 @@
 py-cord==2.4.1
 typing-inspect
 GitPython==3.1.31
+numpy
+matplotlib
+statsmodels
+scipy

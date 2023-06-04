@@ -1,4 +1,5 @@
 import logging
+from logging import handlers
 from typing import Any
 
 import discord.ext.commands
@@ -21,11 +22,11 @@ class DiscordClient(discord.Bot):
         self.module_loader.import_modules()
 
         logger = logging.getLogger('discord')
-        logger.setLevel(level=logging.DEBUG)
-        handler = logging.FileHandler(filename='kultivator.log', encoding='utf-8', mode='a+')
-        handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s %(name)s: %(message)s'))
-
-        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+        log_handler = handlers.TimedRotatingFileHandler('kultivator.log', when='D', interval=1)
+        log_handler.setLevel(logging.DEBUG)
+        log_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s %(name)s: %(message)s'))
+        logger.addHandler(log_handler)
 
     async def on_ready(self):
         for module in self.module_loader.modules:

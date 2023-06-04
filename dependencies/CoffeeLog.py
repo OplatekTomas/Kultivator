@@ -13,7 +13,7 @@ from dependencies.ModuleConfig import ModuleConfig
 class CoffeeType(Enum):
     NORMAL = 1
     DOUBLE = 2
-    INSTINCT = 3
+    INSTINCT = 2
 
 
 class Coffee:
