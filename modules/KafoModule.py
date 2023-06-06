@@ -86,6 +86,10 @@ class KafoView(discord.ui.View):
     async def hahad(self, button, interaction: discord.interactions.Interaction):
         await self.handle_kafo(interaction.user.id, CoffeeType.INSTINCT, interaction)
 
+    @discord.ui.button(label="Energy", style=discord.ButtonStyle.secondary, emoji="<:kenneth:578950451379044364>")
+    async def energy(self, button, interaction: discord.interactions.Interaction):
+        await self.handle_kafo(interaction.user.id, CoffeeType.ENERGY, interaction)
+
     @discord.ui.button(label="Stats", style=discord.ButtonStyle.secondary, emoji="📈")
     async def stats(self, button, interaction: discord.interactions.Interaction):
         image = self.create_stats()
@@ -119,12 +123,27 @@ class KafoModule(BaseModule):
 
     @commands.guild_only()
     @commands.slash_command(description="Čas na kávičku ☕", name="kafo")
-    async def kafo(self, ctx: discord.ApplicationContext):
+    async def kafo(self, ctx: discord.ApplicationContext, typ: discord.Option(str, "Text entry (for legacy devices)", required=False, choices=["kafo", "double", "energy", "stats"])):
         view = KafoView()
         view.log = self.log
         view.bot = self.bot
         view.config = self.config
-        await ctx.response.send_message(view=view)
+        if typ is None or "":
+            await ctx.response.send_message(view=view)
+            return
+        count = 0
+        match typ:
+            case "kafo":
+                count = view.save_kafo(ctx.user.id, CoffeeType.NORMAL)
+            case "double":
+                count = view.save_kafo(ctx.user.id, CoffeeType.DOUBLE)
+            case "energy":
+                count = view.save_kafo(ctx.user.id, CoffeeType.ENERGY)
+            case "stats":
+                await ctx.response.send_message(file=discord.File(view.create_stats(), "kafo.png"))
+                return
+        await ctx.response.send_message(content=f"Kafe číslo: {count}\nNa zdraví <:kafo:780424664152408074>")
+
         pass
 
 

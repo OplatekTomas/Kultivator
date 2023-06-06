@@ -14,6 +14,7 @@ class CoffeeType(Enum):
     NORMAL = 1
     DOUBLE = 2
     INSTINCT = 2
+    ENERGY = 4
 
 
 class Coffee:
