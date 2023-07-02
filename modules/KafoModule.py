@@ -52,7 +52,7 @@ class KafoView(discord.ui.View):
             smoothed_timestamps, smoothed_cumulative_sum = smoothed.T
             user = get(self.bot.get_all_members(), id=label_sets[i])
             if user:
-                plt.plot(smoothed_timestamps, smoothed_cumulative_sum, label=user.name)
+                plt.plot(smoothed_timestamps, smoothed_cumulative_sum, label=(user.display_name + " (" + str(cumulative_sum_sets[i].max()) + ")"))
 
         # Set labels and title
         ax.set_xlabel('Datum')
