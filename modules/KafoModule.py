@@ -64,6 +64,8 @@ class KafoView(discord.ui.View):
         plt.xticks(rotation=45)
 
         plt.legend()
+        plt.grid()
+
         plt.tight_layout()
         buf = io.BytesIO()
         plt.savefig(buf, format='png')
