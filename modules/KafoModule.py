@@ -42,17 +42,14 @@ class KafoView(discord.ui.View):
         label_sets = [id for id in self.log.data]
 
         cumulative_sum_sets = [np.cumsum(enum_values) for enum_values in enum_values_sets]
-
-        smoothed_sets = [lowess(cumulative_sum, timestamps, frac=0.3) for cumulative_sum, timestamps in
-                         zip(cumulative_sum_sets, timestamps_sets)]
-
         fig, ax = plt.subplots()
 
-        for i, smoothed in enumerate(smoothed_sets):
-            smoothed_timestamps, smoothed_cumulative_sum = smoothed.T
-            user = get(self.bot.get_all_members(), id=label_sets[i])
+        for i, user_id in enumerate(label_sets):
+            timestamps = timestamps_sets[i]
+            data = cumulative_sum_sets[i]
+            user = get(self.bot.get_all_members(), id=user_id)
             if user:
-                plt.plot(smoothed_timestamps, smoothed_cumulative_sum, label=(user.display_name + " (" + str(cumulative_sum_sets[i].max()) + ")"))
+                plt.plot(timestamps, data, label=(user.display_name + " (" + str(data[-1]) + ")"))
 
         # Set labels and title
         ax.set_xlabel('Datum')
