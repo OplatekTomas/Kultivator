@@ -42,7 +42,7 @@ class KafoView(discord.ui.View):
         label_sets = [id for id in self.log.data]
 
         data_sets = list(zip(timestamps_sets, enum_values_sets, label_sets))
-        data_sets.sort(key=lambda x: len(x[0]))
+        data_sets.sort(key=lambda x: len(x[0]), reverse=True)
 
         timestamps_sets, enum_values_sets, label_sets = zip(*data_sets)
         timestamps_sets = list(timestamps_sets)
