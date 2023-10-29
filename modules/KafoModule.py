@@ -29,8 +29,11 @@ class KafoView(discord.ui.View):
     config: ModuleConfig
     bot: DiscordClient
 
-    def save_kafo(self, user_id: int, t: CoffeeType) -> int:
-        self.log.add_coffee(user_id, t)
+    selected_count: int = 1
+
+    def save_kafo(self, user_id: int, t: CoffeeType, drink_count: int) -> int:
+        for i in range(drink_count):
+            self.log.add_coffee(user_id, t)
         return sum([x.kind.value for x in self.log.data[user_id]])
 
     def create_stats(self) -> io.BufferedIOBase:
@@ -78,7 +81,7 @@ class KafoView(discord.ui.View):
         return buf
 
     async def handle_kafo(self, user_id: int, count: CoffeeType, interaction: discord.interactions.Interaction):
-        count = self.save_kafo(user_id, count)
+        count = self.save_kafo(user_id, count, self.selected_count)
         await interaction.message.edit(content=f"Kafe číslo: {count}\nNa zdraví <:kafo:780424664152408074>", view=None)
 
     @discord.ui.button(label="Kávička", style=discord.ButtonStyle.secondary, emoji="<:kafo:780424664152408074>")
@@ -101,6 +104,18 @@ class KafoView(discord.ui.View):
     async def stats(self, button, interaction: discord.interactions.Interaction):
         image = self.create_stats()
         await interaction.message.edit(content="",file=discord.File(image, "kafo.png"), view=None)
+
+    @discord.ui.string_select(options=[
+        discord.SelectOption(label="1 nápoj", default=True, value="1"),
+        discord.SelectOption(label="2 nápoje", value="2"),
+        discord.SelectOption(label="3 nápoje", value="3"),
+        discord.SelectOption(label="4 nápoje", value="4"),
+        discord.SelectOption(label="5 nápojů", value="5")],
+        placeholder="Vyber si počet <:kafo:780424664152408074>")
+    async def count_selected(self, select, interaction: discord.interactions.Interaction):
+        self.selected_count = int(select.values[0])
+        await interaction.response.defer()
+        pass
 
 
 class KafoModule(BaseModule):
@@ -130,22 +145,21 @@ class KafoModule(BaseModule):
 
     @commands.guild_only()
     @commands.slash_command(description="Čas na kávičku ☕", name="kafo")
-    async def kafo(self, ctx: discord.ApplicationContext, typ: discord.Option(str, "Text entry (for legacy devices)", required=False, choices=["kafo", "double", "energy", "stats"])):
+    async def kafo(self, ctx: discord.ApplicationContext, kind: discord.Option(str, "Text entry (for legacy devices)", required=False, choices=["kafo", "double", "energy", "stats"]), count: discord.Option(int, "Number of drinks", required=False, default=1)):
         view = KafoView()
         view.log = self.log
         view.bot = self.bot
         view.config = self.config
-        if typ is None or "":
+        if kind is None or "":
             await ctx.response.send_message(view=view)
             return
-        count = 0
-        match typ:
+        match kind:
             case "kafo":
-                count = view.save_kafo(ctx.user.id, CoffeeType.NORMAL)
+                count = view.save_kafo(ctx.user.id, CoffeeType.NORMAL, count)
             case "double":
-                count = view.save_kafo(ctx.user.id, CoffeeType.DOUBLE)
+                count = view.save_kafo(ctx.user.id, CoffeeType.DOUBLE, count)
             case "energy":
-                count = view.save_kafo(ctx.user.id, CoffeeType.ENERGY)
+                count = view.save_kafo(ctx.user.id, CoffeeType.ENERGY, count)
             case "stats":
                 await ctx.response.send_message(file=discord.File(view.create_stats(), "kafo.png"))
                 return
