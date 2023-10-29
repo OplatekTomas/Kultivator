@@ -153,6 +153,9 @@ class KafoModule(BaseModule):
         if kind is None or "":
             await ctx.response.send_message(view=view)
             return
+        if count <= 0:
+            await ctx.response.send_message(content=f"Ale fajny pokus.. <:peepoCantBelieveThisShit:654408167555465256>\n`{count} si nedáš`")
+            return
         match kind:
             case "kafo":
                 count = view.save_kafo(ctx.user.id, CoffeeType.NORMAL, count)
