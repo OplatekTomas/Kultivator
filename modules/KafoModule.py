@@ -154,7 +154,7 @@ class KafoModule(BaseModule):
             await ctx.response.send_message(view=view)
             return
         if count <= 0:
-            await ctx.response.send_message(content=f"Ale fajny pokus.. <:peepoCantBelieveThisShit:654408167555465256>\n`{count} si nedáš`")
+            await ctx.response.send_message(content=f"Ale fajny pokus.. <:plesk:813164113638326272>\n`{count} si nedáš`")
             return
         match kind:
             case "kafo":
