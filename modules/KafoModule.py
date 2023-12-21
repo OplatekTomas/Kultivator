@@ -1,5 +1,7 @@
 import glob
 import io
+import os.path
+import random
 
 import discord
 import matplotlib.pyplot as plt
@@ -22,12 +24,14 @@ from Container import Injectable
 from DiscordClient import DiscordClient
 from dependencies.CoffeeLog import CoffeeLog, CoffeeType
 from dependencies.ModuleConfig import ModuleConfig
+from dependencies.PersistentStorage import PersistentStorage
 
 class KafoView(discord.ui.View):
 
     log: CoffeeLog
     config: ModuleConfig
     bot: DiscordClient
+    storage: PersistentStorage
 
     selected_count: int = 1
 
@@ -45,13 +49,12 @@ class KafoView(discord.ui.View):
         label_sets = [id for id in self.log.data]
 
         data_sets = list(zip(timestamps_sets, enum_values_sets, label_sets))
-        data_sets.sort(key=lambda x: len(x[0]), reverse=True)
+        data_sets.sort(key=lambda x: sum(x[1]), reverse=True)
 
         timestamps_sets, enum_values_sets, label_sets = zip(*data_sets)
         timestamps_sets = list(timestamps_sets)
         enum_values_sets = list(enum_values_sets)
         label_sets = list(label_sets)
-
         cumulative_sum_sets = [np.cumsum(enum_values) for enum_values in enum_values_sets]
         fig, ax = plt.subplots()
 
@@ -123,8 +126,11 @@ class KafoModule(BaseModule):
     discord_client: DiscordClient = Injectable[DiscordClient]()
     log: CoffeeLog = Injectable[CoffeeLog]()
     config: ModuleConfig = Injectable[ModuleConfig]()
+    storage: PersistentStorage = Injectable[PersistentStorage]()
+    path: str = ""
 
     async def on_load(self):
+        self.path = self.storage.create_dir(self.config["workday_morning_dir"])
         pass
 
     def after_inject(self):
@@ -138,7 +144,7 @@ class KafoModule(BaseModule):
     def load_cache(self):
         if self.cache is None:
             return
-        dir = self.storage.create_dir(self.config["dir"])
+        self.path = self.storage.create_dir(self.config["dir"])
         print(glob.glob(f"/home/adam/*.{self.config['ext']}"))
 
         pass
@@ -150,6 +156,7 @@ class KafoModule(BaseModule):
         view.log = self.log
         view.bot = self.bot
         view.config = self.config
+        view.storage = self.storage
         if kind is None or "":
             await ctx.response.send_message(view=view)
             return
@@ -167,8 +174,21 @@ class KafoModule(BaseModule):
                 await ctx.response.send_message(file=discord.File(view.create_stats(), "kafo.png"))
                 return
         await ctx.response.send_message(content=f"Kafe číslo: {count}\nNa zdraví <:kafo:780424664152408074>")
-
+        try:
+            if True or( self.is_it_workweek_and_morning() and random.randint(0, 100) == 69):
+                raise Exception
+                files = self.storage.list_files(self.config["workday_morning_dir"])
+                img = random.choice(files)
+                await ctx.send(file=discord.File(self.storage.get_full_path(img)))
+        except:
+            channel = self.discord_client.get_channel(self.config["bot_channel_id"])
+            await ctx.send(channel=channel, content="Test")
         pass
+
+    def is_it_workweek_and_morning(self) -> bool:
+        hour = datetime.now().hour
+        day = datetime.weekday(datetime.now())
+        return hour > 6 and hour < 12 and day in [0, 1, 2, 3, 4]
 
 
 def setup(bot):
