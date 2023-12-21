@@ -86,6 +86,15 @@ class KafoView(discord.ui.View):
     async def handle_kafo(self, user_id: int, count: CoffeeType, interaction: discord.interactions.Interaction):
         count = self.save_kafo(user_id, count, self.selected_count)
         await interaction.message.edit(content=f"Kafe číslo: {count}\nNa zdraví <:kafo:780424664152408074>", view=None)
+        try:
+            if self.is_it_workweek_and_morning() and random.randint(0, 100) == 69:
+                files = self.storage.list_files(self.config["workday_morning_dir"])
+                img = random.choice(files)
+                await interaction.channel.send(file=discord.File(self.storage.get_full_path(img)))
+        except:
+            channel = self.discord_client.get_channel(self.config["bot_channel_id"])
+            await channel.send(content="Exception thrown.")
+        pass
 
     @discord.ui.button(label="Kávička", style=discord.ButtonStyle.secondary, emoji="<:kafo:780424664152408074>")
     async def depresso_callback(self, button, interaction: discord.interactions.Interaction):
