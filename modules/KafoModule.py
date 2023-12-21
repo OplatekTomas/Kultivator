@@ -175,14 +175,13 @@ class KafoModule(BaseModule):
                 return
         await ctx.response.send_message(content=f"Kafe číslo: {count}\nNa zdraví <:kafo:780424664152408074>")
         try:
-            if True or( self.is_it_workweek_and_morning() and random.randint(0, 100) == 69):
-                raise Exception
+            if self.is_it_workweek_and_morning() and random.randint(0, 100) == 69:
                 files = self.storage.list_files(self.config["workday_morning_dir"])
                 img = random.choice(files)
                 await ctx.send(file=discord.File(self.storage.get_full_path(img)))
         except:
             channel = self.discord_client.get_channel(self.config["bot_channel_id"])
-            await ctx.send(channel=channel, content="Test")
+            await channel.send(content="Exception thrown.")
         pass
 
     def is_it_workweek_and_morning(self) -> bool:
