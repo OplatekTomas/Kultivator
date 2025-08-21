@@ -22,9 +22,9 @@ class DiscordClient(discord.Bot):
         self.module_loader.import_modules()
 
         logger = logging.getLogger('discord')
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
         log_handler = handlers.TimedRotatingFileHandler('kultivator.log', when='D', interval=1)
-        log_handler.setLevel(logging.DEBUG)
+        log_handler.setLevel(logging.INFO)
         log_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s %(name)s: %(message)s'))
         logger.addHandler(log_handler)
 
