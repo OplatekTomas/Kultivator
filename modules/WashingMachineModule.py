@@ -19,6 +19,7 @@ class WashingMachineModule(BaseModule):
     config: ModuleConfig = Injectable[ModuleConfig]()
 
     previous_running_state: bool = False
+    assigned_user = None
 
     async def on_load(self):
         channel_id = self.config["channel_id"]
@@ -33,7 +34,11 @@ class WashingMachineModule(BaseModule):
                 current_state = self.washing_machine.is_running()
 
                 if self.previous_running_state and not current_state:
-                    await channel.send("@everyone dojela pračka ")
+                    if self.assigned_user is None:
+                        await channel.send("@everyone dojela pračka ")
+                    else:
+                        self.assigned_user = None
+                        await channel.send(f"@{self.assigned_user} dojela pračka ")
 
                 # Update the previous state
                 self.previous_running_state = current_state
@@ -48,6 +53,13 @@ class WashingMachineModule(BaseModule):
     @commands.slash_command(description="Jede pračka?", name="iswashing")
     async def is_running(self, ctx: discord.ApplicationContext):
         await ctx.send_response(self.washing_machine.is_running())
+        pass
+
+    @commands.guild_only()
+    @commands.slash_command(description="Zapl jsem pracku", name="peru")
+    async def assign_user(self, ctx: discord.ApplicationContext):
+        self.assigned_user = ctx.author.display_name
+        await ctx.send_response(f"Další pračka je od {self.assigned_user}")
         pass
 
 
