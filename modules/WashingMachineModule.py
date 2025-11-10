@@ -37,8 +37,8 @@ class WashingMachineModule(BaseModule):
                     if self.assigned_user is None:
                         await channel.send("@everyone dojela pračka ")
                     else:
-                        self.assigned_user = None
                         await channel.send(f"@{self.assigned_user} dojela pračka ")
+                        self.assigned_user = None
 
                 # Update the previous state
                 self.previous_running_state = current_state
@@ -58,8 +58,8 @@ class WashingMachineModule(BaseModule):
     @commands.guild_only()
     @commands.slash_command(description="Zapl jsem pracku", name="peru")
     async def assign_user(self, ctx: discord.ApplicationContext):
-        self.assigned_user = ctx.author.display_name
-        await ctx.send_response(f"Další pračka je od {self.assigned_user}")
+        self.assigned_user = ctx.author.global_name
+        await ctx.send_response(f"Další pračka je od {ctx.author.display_name}")
         pass
 
 
